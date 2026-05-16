@@ -18,9 +18,13 @@
     --text-faint: #94a3b8;
     --accent: #3b82f6;
     --accent-soft: #60a5fa;
+    --accent-dim: rgba(59, 130, 246, 0.15);
     --success: #10b981;
     --warn: #f59e0b;
     --danger: #ef4444;
+    --purple: #a855f7;
+    --pink: #ec4899;
+    --cyan: #06b6d4;
   }
 
   body {
@@ -32,9 +36,8 @@
     line-height: 1.5;
   }
 
-  .wrap { max-width: 1100px; margin: 0 auto; }
+  .wrap { max-width: 1200px; margin: 0 auto; }
 
-  /* Header */
   header {
     display: flex; justify-content: space-between; align-items: flex-end;
     margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
@@ -50,7 +53,26 @@
   .status.dirty { color: var(--warn); border-color: var(--warn); }
   .status.saved { color: var(--success); border-color: var(--success); }
 
-  /* Sections */
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    background: transparent; color: var(--text-faint);
+    border: none; padding: 12px 20px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--text-soft); }
+  .tab.active { color: var(--accent-soft); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
   section {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -62,46 +84,36 @@
     font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
     color: var(--text-faint); margin-bottom: 14px; font-weight: 600;
   }
-
-  /* Planning grid */
-  .planning-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    overflow: hidden;
-    border-radius: 8px;
+  section h2 .count {
+    background: var(--accent-dim); color: var(--accent-soft);
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; margin-left: 8px;
+    letter-spacing: 0;
   }
+
+  /* Planning table */
+  .planning-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; }
   .planning-table th, .planning-table td {
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
+    padding: 10px 12px; text-align: left;
+    border-bottom: 1px solid var(--border); font-size: 14px;
   }
   .planning-table thead th {
     background: var(--panel-2);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-soft);
-    font-weight: 600;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--text-soft); font-weight: 600;
     border-bottom: 2px solid var(--border);
   }
   .planning-table tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
   .planning-table .col-day { font-weight: 600; color: var(--text); width: 110px; }
-  .planning-table .col-slot { color: var(--text-soft); font-family: 'Inter', monospace; width: 130px; font-size: 13px; }
+  .planning-table .col-slot { color: var(--text-soft); font-size: 13px; width: 130px; }
 
-  /* Select */
   select.prof-select {
     width: 100%;
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     border: 1px solid var(--border);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 13px;
-    cursor: pointer;
-    transition: border-color 0.15s;
+    padding: 6px 10px; border-radius: 6px;
+    font-family: inherit; font-size: 13px;
+    cursor: pointer; transition: border-color 0.15s;
   }
   select.prof-select:hover { border-color: var(--accent); }
   select.prof-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
@@ -110,22 +122,12 @@
   select.prof-select.assigned { color: var(--accent-soft); border-color: var(--accent); background: rgba(59, 130, 246, 0.08); }
 
   /* Actions */
-  .actions {
-    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
-    margin-top: 18px;
-  }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
   button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.5px;
+    background: var(--accent); color: white; border: none;
+    padding: 10px 18px; border-radius: 6px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px;
   }
   button:hover { background: var(--accent-soft); transform: translateY(-1px); }
   button:active { transform: translateY(0); }
@@ -136,116 +138,266 @@
   button.icon { padding: 6px 10px; font-size: 12px; }
   button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  /* Profs / Slots list */
-  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  .pill {
+  /* PROFS LIST AMÉLIORÉE */
+  .profs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .prof-card {
     background: var(--bg);
     border: 1px solid var(--border);
-    padding: 6px 10px 6px 14px;
-    border-radius: 16px;
-    font-size: 13px;
-    display: inline-flex;
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    transition: all 0.15s;
   }
-  .pill input {
-    background: transparent;
-    color: var(--text);
-    border: none;
-    font: inherit;
-    width: 90px;
-    padding: 0;
+  .prof-card:hover { border-color: var(--accent); }
+  .prof-card.has-courses { border-left: 3px solid var(--success); }
+  .prof-card.no-courses { border-left: 3px solid var(--text-faint); opacity: 0.85; }
+  .prof-card input {
+    flex: 1; min-width: 0;
+    background: transparent; color: var(--text);
+    border: none; font: inherit; font-size: 14px; font-weight: 500;
+    padding: 4px 0;
   }
-  .pill input:focus { outline: none; }
-  .pill .remove {
-    background: transparent;
-    color: var(--text-faint);
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 0 4px;
-    line-height: 1;
+  .prof-card input:focus { outline: none; border-bottom: 1px solid var(--accent); }
+  .prof-card .badge {
+    background: var(--panel-2); color: var(--text-soft);
+    font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; min-width: 24px; text-align: center;
   }
-  .pill .remove:hover { color: var(--danger); }
+  .prof-card.has-courses .badge { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+  .prof-card .remove {
+    background: transparent; color: var(--text-faint);
+    border: none; cursor: pointer; font-size: 18px;
+    padding: 0 4px; line-height: 1;
+  }
+  .prof-card .remove:hover { color: var(--danger); }
 
-  .add-pill {
+  .add-prof-btn {
     background: rgba(59, 130, 246, 0.1);
     border: 1px dashed var(--accent);
     color: var(--accent-soft);
-    padding: 6px 14px;
-    border-radius: 16px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
+    padding: 10px;
+    border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 500;
   }
-  .add-pill:hover { background: rgba(59, 130, 246, 0.2); }
+  .add-prof-btn:hover { background: rgba(59, 130, 246, 0.2); }
 
-  /* Slot rows config */
+  /* Slot config */
   .slot-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 8px;
-    margin-bottom: 8px;
-    align-items: center;
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px;
+    margin-bottom: 8px; align-items: center;
   }
   .slot-row input {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg); color: var(--text);
     border: 1px solid var(--border);
-    padding: 7px 10px;
-    border-radius: 6px;
-    font: inherit;
-    font-size: 13px;
+    padding: 7px 10px; border-radius: 6px;
+    font: inherit; font-size: 13px;
   }
   .slot-row input:focus { outline: none; border-color: var(--accent); }
 
+  /* GRAPHIQUES */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+  }
+
+  /* Chart card */
+  .chart-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .chart-card h3 {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .chart-card .desc {
+    font-size: 11px; color: var(--text-faint);
+    margin-bottom: 14px;
+  }
+
+  /* Bar chart */
+  .bar-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 30px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 12.5px;
+  }
+  .bar-row .lbl { color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar-row .bar-track {
+    background: var(--panel-2);
+    height: 18px;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-row .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+    border-radius: 4px;
+    transition: width 0.3s;
+  }
+  .bar-row .bar-fill.zero { background: var(--text-faint); opacity: 0.3; }
+  .bar-row .bar-fill.high { background: linear-gradient(90deg, var(--warn), var(--danger)); }
+  .bar-row .val { color: var(--text); font-weight: 600; text-align: right; font-size: 12px; }
+  .bar-row .val.muted { color: var(--text-faint); }
+
+  /* Stats cards */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+  .stat-card .stat-val {
+    font-size: 24px; font-weight: 700; color: var(--text);
+    line-height: 1;
+  }
+  .stat-card .stat-label {
+    font-size: 11px; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-top: 4px;
+  }
+  .stat-card.success .stat-val { color: var(--success); }
+  .stat-card.warn .stat-val { color: var(--warn); }
+  .stat-card.danger .stat-val { color: var(--danger); }
+  .stat-card.accent .stat-val { color: var(--accent-soft); }
+
+  /* Liste profs sans cours */
+  .empty-list {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .empty-pill {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    padding: 4px 12px; border-radius: 12px;
+    font-size: 12px;
+  }
+  .empty-list .all-good {
+    color: var(--success); font-size: 13px;
+    background: rgba(16, 185, 129, 0.1); padding: 8px 14px;
+    border-radius: 8px; border: 1px solid var(--success);
+  }
+
+  /* Planning par prof */
+  .prof-detail {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .prof-detail.empty { opacity: 0.5; }
+  .prof-detail-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .prof-detail-name {
+    font-weight: 600; color: var(--text); font-size: 14px;
+  }
+  .prof-detail-count {
+    font-size: 11px; color: var(--text-faint);
+  }
+  .prof-courses { display: flex; flex-wrap: wrap; gap: 6px; }
+  .prof-course {
+    background: var(--accent-dim); color: var(--accent-soft);
+    padding: 4px 10px; border-radius: 10px;
+    font-size: 11.5px;
+  }
+  .prof-course .room { font-weight: 600; }
+  .prof-course .none {
+    background: transparent; color: var(--text-faint);
+    font-style: italic; padding: 0;
+  }
+
+  /* Heatmap salles */
+  .heatmap {
+    display: grid;
+    grid-template-columns: 80px repeat(var(--cols, 4), 1fr);
+    gap: 4px;
+  }
+  .heatmap-cell {
+    padding: 8px 6px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 11px;
+    font-family: inherit;
+  }
+  .heatmap-cell.label-y {
+    background: var(--panel-2); color: var(--text-soft);
+    font-weight: 600; text-align: left; padding-left: 10px;
+  }
+  .heatmap-cell.label-x {
+    background: var(--panel-2); color: var(--text-soft);
+    font-weight: 600;
+  }
+  .heatmap-cell.data {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .heatmap-cell.data.filled {
+    background: var(--accent-dim);
+    color: var(--accent-soft);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .heatmap-cell.data.empty {
+    color: var(--text-faint);
+  }
+
   /* Modal */
   .modal-bg {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 100;
-    align-items: center; justify-content: center;
-    padding: 20px;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 100;
+    align-items: center; justify-content: center; padding: 20px;
   }
   .modal-bg.show { display: flex; }
   .modal {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    max-width: 480px;
-    width: 100%;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px;
+    max-width: 480px; width: 100%;
   }
   .modal h3 { font-size: 18px; margin-bottom: 8px; }
   .modal p { color: var(--text-soft); margin-bottom: 16px; font-size: 14px; }
   .modal label {
     display: block; font-size: 12px; color: var(--text-faint);
-    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 14px;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 6px; margin-top: 14px;
   }
   .modal input {
-    width: 100%;
-    background: var(--bg); color: var(--text);
+    width: 100%; background: var(--bg); color: var(--text);
     border: 1px solid var(--border);
-    padding: 10px 12px;
-    border-radius: 6px;
-    font: inherit; font-size: 14px;
-    font-family: monospace;
+    padding: 10px 12px; border-radius: 6px;
+    font: inherit; font-size: 14px; font-family: monospace;
   }
   .modal input:focus { outline: none; border-color: var(--accent); }
   .modal .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
   .modal .hint {
     font-size: 11px; color: var(--text-faint);
-    background: var(--bg); padding: 8px 10px; border-radius: 4px;
-    margin-top: 8px; line-height: 1.5;
+    background: var(--bg); padding: 8px 10px;
+    border-radius: 4px; margin-top: 8px; line-height: 1.5;
   }
   .modal .hint a { color: var(--accent-soft); }
-  .modal .err {
-    color: var(--danger); font-size: 13px; margin-top: 10px; display: none;
-  }
+  .modal .err { color: var(--danger); font-size: 13px; margin-top: 10px; display: none; }
   .modal .err.show { display: block; }
 
-  /* Toast */
   .toast {
     position: fixed; bottom: 20px; right: 20px;
     background: var(--panel); border: 1px solid var(--border);
@@ -260,26 +412,22 @@
   .toast.success { border-color: var(--success); color: var(--success); }
   .toast.error { border-color: var(--danger); color: var(--danger); }
 
-  /* Compact mode */
+  .footer {
+    text-align: center; margin-top: 32px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint); font-size: 11px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  .loading { color: var(--text-faint); font-size: 13px; padding: 12px; text-align: center; }
+
   @media (max-width: 700px) {
     .planning-table th, .planning-table td { padding: 6px 8px; font-size: 12px; }
     .planning-table .col-day { width: 80px; }
     .planning-table .col-slot { width: 100px; font-size: 11px; }
     select.prof-select { font-size: 12px; padding: 5px 8px; }
+    .bar-row { grid-template-columns: 90px 1fr 26px; font-size: 11.5px; }
   }
-
-  .footer {
-    text-align: center;
-    margin-top: 32px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-    color: var(--text-faint);
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .loading { color: var(--text-faint); font-size: 13px; padding: 12px; text-align: center; }
 </style>
 </head>
 <body>
@@ -291,37 +439,110 @@
     <div class="status" id="status">Chargement…</div>
   </header>
 
-  <!-- PLANNING -->
-  <section>
-    <h2>Cours programmés</h2>
-    <div id="planning-container">
-      <div class="loading">Chargement du planning…</div>
+  <div class="tabs">
+    <button class="tab active" data-tab="planning">📅 Planning</button>
+    <button class="tab" data-tab="charts">📊 Visualisation</button>
+    <button class="tab" data-tab="config">⚙️ Configuration</button>
+  </div>
+
+  <!-- TAB PLANNING -->
+  <div class="tab-content active" id="tab-planning">
+
+    <!-- Profs liste compacte en haut -->
+    <section>
+      <h2>Profs <span class="count" id="profs-count">0</span></h2>
+      <div class="profs-grid" id="profs-list"></div>
+    </section>
+
+    <!-- Planning grille -->
+    <section>
+      <h2>Cours programmés</h2>
+      <div id="planning-container">
+        <div class="loading">Chargement du planning…</div>
+      </div>
+      <div class="actions">
+        <button id="btn-save">💾 Sauvegarder sur GitHub</button>
+        <button class="secondary" id="btn-reload">🔄 Recharger</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB GRAPHIQUES -->
+  <div class="tab-content" id="tab-charts">
+    <section>
+      <h2>Vue d'ensemble</h2>
+      <div class="stats-row" id="stats-row"></div>
+    </section>
+
+    <div class="charts-grid">
+      <!-- Charge par prof -->
+      <div class="chart-card">
+        <h3>Charge par prof</h3>
+        <div class="desc">Nombre de cours assignés à chaque prof</div>
+        <div id="chart-prof-load"></div>
+      </div>
+
+      <!-- Cours par jour -->
+      <div class="chart-card">
+        <h3>Activité par jour</h3>
+        <div class="desc">Nombre total de cours programmés</div>
+        <div id="chart-day-load"></div>
+      </div>
+
+      <!-- Profs sans cours -->
+      <div class="chart-card">
+        <h3>Profs sans cours</h3>
+        <div class="desc">Disponibles, non assignés à ce planning</div>
+        <div id="chart-empty-profs"></div>
+      </div>
+
+      <!-- Occupation par salle -->
+      <div class="chart-card">
+        <h3>Occupation des salles</h3>
+        <div class="desc">Taux de remplissage de chaque salle</div>
+        <div id="chart-room-load"></div>
+      </div>
     </div>
-    <div class="actions">
-      <button id="btn-save">💾 Sauvegarder sur GitHub</button>
-      <button class="secondary" id="btn-reload">🔄 Recharger</button>
-      <button class="secondary icon" id="btn-add-slot">+ Créneau</button>
-    </div>
-  </section>
 
-  <!-- PROFS -->
-  <section>
-    <h2>Liste des profs</h2>
-    <div class="pill-list" id="profs-list"></div>
-  </section>
+    <!-- Planning par prof -->
+    <section style="margin-top:16px">
+      <h2>Planning par prof</h2>
+      <div id="prof-schedules"></div>
+    </section>
 
-  <!-- CRÉNEAUX -->
-  <section>
-    <h2>Configuration des créneaux</h2>
-    <div id="slots-config"></div>
-    <button class="secondary icon" id="btn-add-slot-config" style="margin-top:8px">+ Ajouter un créneau</button>
-  </section>
+    <!-- Heatmap salles -->
+    <section>
+      <h2>Carte d'occupation (jour × salle)</h2>
+      <div id="heatmap-rooms"></div>
+    </section>
+  </div>
 
-  <div class="footer">Oryxis School · Planning v1</div>
+  <!-- TAB CONFIG -->
+  <div class="tab-content" id="tab-config">
+    <section>
+      <h2>Salles</h2>
+      <div id="rooms-config"></div>
+      <button class="secondary icon" id="btn-add-room" style="margin-top:8px">+ Ajouter une salle</button>
+    </section>
+
+    <section>
+      <h2>Créneaux</h2>
+      <div id="slots-config"></div>
+      <button class="secondary icon" id="btn-add-slot" style="margin-top:8px">+ Ajouter un créneau</button>
+    </section>
+
+    <section>
+      <h2>Tout réinitialiser</h2>
+      <p style="color:var(--text-faint); font-size:13px; margin-bottom:12px">Supprime toutes les affectations (mais garde profs/salles/créneaux).</p>
+      <button class="danger" id="btn-reset">⚠ Vider le planning</button>
+    </section>
+  </div>
+
+  <div class="footer">Oryxis School · Planning v2</div>
 
 </div>
 
-<!-- Modal d'authentification -->
+<!-- Modal d'auth -->
 <div class="modal-bg" id="auth-modal">
   <div class="modal">
     <h3>Authentification requise</h3>
@@ -349,17 +570,14 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ─────────── CONFIG ─────────── */
 const CONFIG = {
   owner: 'labshumane374-netizen',
   repo: 'school-planning',
   path: 'planning.json',
   branch: 'main',
-  // Mot de passe simple (modifie-le, c'est juste un garde-fou ergonomique)
   password: 'oryxis2026'
 };
 
-/* ─────────── DONNÉES PAR DÉFAUT ─────────── */
 const DEFAULT_DATA = {
   rooms: ['Alpha', 'Beta', 'Gamma', 'Delta'],
   profs: ['Prof 1','Prof 2','Prof 3','Prof 4','Prof 5','Prof 6','Prof 7','Prof 8','Prof 9','Prof 10'],
@@ -371,7 +589,6 @@ const DEFAULT_DATA = {
     { day: 'Samedi',   time: '21h00 - 22h00' },
     { day: 'Samedi',   time: '22h00 - 23h00' }
   ],
-  // assignments[slotIndex][roomIndex] = profName ou ''
   assignments: {}
 };
 
@@ -379,60 +596,173 @@ let state = JSON.parse(JSON.stringify(DEFAULT_DATA));
 let sha = null;
 let dirty = false;
 
-/* ─────────── UI ─────────── */
+/* HELPERS */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+function getAssignment(slotIdx, roomIdx) {
+  const key = slotIdx + '_' + roomIdx;
+  return (state.assignments && state.assignments[key]) || '';
+}
+function setAssignment(slotIdx, roomIdx, value) {
+  if (!state.assignments) state.assignments = {};
+  state.assignments[slotIdx + '_' + roomIdx] = value;
+  markDirty();
+  renderCharts();
+}
+
 function setStatus(text, cls) {
   const el = document.getElementById('status');
   el.textContent = text;
   el.className = 'status ' + (cls || '');
 }
-
 function toast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show ' + (type || '');
   setTimeout(() => t.classList.remove('show'), 3500);
 }
-
 function markDirty() {
   dirty = true;
   setStatus('Modifications non sauvegardées', 'dirty');
 }
 
-function getAssignment(slotIdx, roomIdx) {
-  const key = slotIdx + '_' + roomIdx;
-  return (state.assignments && state.assignments[key]) || '';
+/* STATS — calcul */
+function computeStats() {
+  const profLoad = {};
+  state.profs.forEach(p => profLoad[p] = 0);
+
+  const dayLoad = {};
+  const dayProfsUnique = {};
+  state.slots.forEach(s => {
+    dayLoad[s.day] = dayLoad[s.day] || 0;
+    dayProfsUnique[s.day] = dayProfsUnique[s.day] || new Set();
+  });
+
+  const roomLoad = {};
+  state.rooms.forEach(r => roomLoad[r] = 0);
+
+  const profSchedule = {}; // prof -> [{day,time,room}]
+  state.profs.forEach(p => profSchedule[p] = []);
+
+  let totalAssigned = 0;
+  const totalSlots = state.slots.length * state.rooms.length;
+
+  state.slots.forEach((slot, sIdx) => {
+    state.rooms.forEach((room, rIdx) => {
+      const p = getAssignment(sIdx, rIdx);
+      if (p && state.profs.includes(p)) {
+        profLoad[p] = (profLoad[p] || 0) + 1;
+        dayLoad[slot.day]++;
+        dayProfsUnique[slot.day].add(p);
+        roomLoad[room]++;
+        profSchedule[p].push({ day: slot.day, time: slot.time, room: room });
+        totalAssigned++;
+      }
+    });
+  });
+
+  const profsWithoutCourses = state.profs.filter(p => profLoad[p] === 0);
+  const profsWithCourses = state.profs.filter(p => profLoad[p] > 0);
+
+  return {
+    profLoad, dayLoad, dayProfsUnique, roomLoad, profSchedule,
+    totalAssigned, totalSlots,
+    profsWithoutCourses, profsWithCourses,
+    fillRate: totalSlots > 0 ? Math.round(totalAssigned / totalSlots * 100) : 0
+  };
 }
 
-function setAssignment(slotIdx, roomIdx, value) {
-  if (!state.assignments) state.assignments = {};
-  state.assignments[slotIdx + '_' + roomIdx] = value;
-  markDirty();
+/* RENDER — Profs list */
+function renderProfs() {
+  const container = document.getElementById('profs-list');
+  const countEl = document.getElementById('profs-count');
+  countEl.textContent = state.profs.length;
+
+  const stats = computeStats();
+
+  let html = '';
+  state.profs.forEach((p, i) => {
+    const load = stats.profLoad[p] || 0;
+    const cls = load > 0 ? 'has-courses' : 'no-courses';
+    html += `<div class="prof-card ${cls}">`;
+    html += `<input type="text" value="${escapeAttr(p)}" data-idx="${i}">`;
+    html += `<span class="badge" title="${load} cours">${load}</span>`;
+    html += `<button class="remove" data-idx="${i}" title="Supprimer">×</button>`;
+    html += `</div>`;
+  });
+  html += `<button class="add-prof-btn" id="btn-add-prof">+ Ajouter un prof</button>`;
+  container.innerHTML = html;
+
+  container.querySelectorAll('.prof-card input').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const i = parseInt(e.target.dataset.idx);
+      const oldName = state.profs[i];
+      const newName = e.target.value.trim();
+      if (!newName) { e.target.value = oldName; return; }
+      if (newName === oldName) return;
+      // Vérifie unicité
+      if (state.profs.some((p, idx) => idx !== i && p === newName)) {
+        toast('Ce nom est déjà utilisé.', 'error');
+        e.target.value = oldName;
+        return;
+      }
+      state.profs[i] = newName;
+      Object.keys(state.assignments).forEach(k => {
+        if (state.assignments[k] === oldName) state.assignments[k] = newName;
+      });
+      markDirty();
+      renderAll();
+    });
+  });
+  container.querySelectorAll('.prof-card .remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const i = parseInt(e.target.dataset.idx);
+      const name = state.profs[i];
+      if (!confirm(`Supprimer "${name}" de la liste ?`)) return;
+      state.profs.splice(i, 1);
+      Object.keys(state.assignments).forEach(k => {
+        if (state.assignments[k] === name) state.assignments[k] = '';
+      });
+      markDirty();
+      renderAll();
+    });
+  });
+  document.getElementById('btn-add-prof').addEventListener('click', () => {
+    let n = state.profs.length + 1;
+    while (state.profs.includes('Prof ' + n)) n++;
+    state.profs.push('Prof ' + n);
+    markDirty();
+    renderAll();
+  });
 }
 
+/* RENDER — Planning grid */
 function renderPlanning() {
   const container = document.getElementById('planning-container');
   let html = '<table class="planning-table"><thead><tr>';
   html += '<th class="col-day">Jour</th><th class="col-slot">Créneau</th>';
-  state.rooms.forEach(r => html += '<th>' + escapeHtml(r) + '</th>');
+  state.rooms.forEach(r => html += `<th>${escapeHtml(r)}</th>`);
   html += '</tr></thead><tbody>';
 
   state.slots.forEach((slot, slotIdx) => {
     html += '<tr>';
-    html += '<td class="col-day">' + escapeHtml(slot.day) + '</td>';
-    html += '<td class="col-slot">' + escapeHtml(slot.time) + '</td>';
+    html += `<td class="col-day">${escapeHtml(slot.day)}</td>`;
+    html += `<td class="col-slot">${escapeHtml(slot.time)}</td>`;
     state.rooms.forEach((room, roomIdx) => {
       const current = getAssignment(slotIdx, roomIdx);
-      html += '<td><select class="prof-select ' + (current ? 'assigned' : 'empty') + '" data-slot="' + slotIdx + '" data-room="' + roomIdx + '">';
+      html += `<td><select class="prof-select ${current ? 'assigned' : 'empty'}" data-slot="${slotIdx}" data-room="${roomIdx}">`;
       html += '<option value="">— libre —</option>';
       state.profs.forEach(p => {
-        html += '<option value="' + escapeAttr(p) + '"' + (p === current ? ' selected' : '') + '>' + escapeHtml(p) + '</option>';
+        html += `<option value="${escapeAttr(p)}"${p === current ? ' selected' : ''}>${escapeHtml(p)}</option>`;
       });
       html += '</select></td>';
     });
     html += '</tr>';
   });
   html += '</tbody></table>';
-
   container.innerHTML = html;
 
   container.querySelectorAll('select.prof-select').forEach(sel => {
@@ -441,69 +771,63 @@ function renderPlanning() {
       const roomIdx = parseInt(e.target.dataset.room);
       setAssignment(slotIdx, roomIdx, e.target.value);
       e.target.className = 'prof-select ' + (e.target.value ? 'assigned' : 'empty');
+      // Met à jour badges profs sans tout re-render
+      renderProfs();
     });
   });
 }
 
-function renderProfs() {
-  const container = document.getElementById('profs-list');
+/* RENDER — Config rooms */
+function renderRoomsConfig() {
+  const container = document.getElementById('rooms-config');
   let html = '';
-  state.profs.forEach((p, i) => {
-    html += '<div class="pill">';
-    html += '<input type="text" value="' + escapeAttr(p) + '" data-idx="' + i + '">';
-    html += '<button class="remove" data-idx="' + i + '" title="Supprimer">×</button>';
-    html += '</div>';
+  state.rooms.forEach((r, i) => {
+    html += `<div class="slot-row" style="grid-template-columns: 1fr auto">`;
+    html += `<input type="text" value="${escapeAttr(r)}" data-idx="${i}">`;
+    html += `<button class="danger icon" data-idx="${i}">×</button>`;
+    html += `</div>`;
   });
-  html += '<button class="add-pill" id="btn-add-prof">+ Ajouter un prof</button>';
   container.innerHTML = html;
 
-  container.querySelectorAll('.pill input').forEach(inp => {
+  container.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = parseInt(e.target.dataset.idx);
-      const oldName = state.profs[i];
       const newName = e.target.value.trim();
-      if (!newName) { e.target.value = oldName; return; }
-      state.profs[i] = newName;
-      // Met à jour les affectations qui utilisent l'ancien nom
-      Object.keys(state.assignments).forEach(k => {
-        if (state.assignments[k] === oldName) state.assignments[k] = newName;
-      });
+      if (!newName) { e.target.value = state.rooms[i]; return; }
+      state.rooms[i] = newName;
       markDirty();
-      renderPlanning();
+      renderAll();
     });
   });
-  container.querySelectorAll('.pill .remove').forEach(btn => {
+  container.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', e => {
       const i = parseInt(e.target.dataset.idx);
-      const name = state.profs[i];
-      if (!confirm('Supprimer "' + name + '" de la liste ?')) return;
-      state.profs.splice(i, 1);
+      if (!confirm(`Supprimer la salle "${state.rooms[i]}" et ses affectations ?`)) return;
+      state.rooms.splice(i, 1);
+      // Réindexe les assignments
+      const newAssign = {};
       Object.keys(state.assignments).forEach(k => {
-        if (state.assignments[k] === name) state.assignments[k] = '';
+        const [slotIdx, roomIdx] = k.split('_').map(Number);
+        if (roomIdx < i) newAssign[k] = state.assignments[k];
+        else if (roomIdx > i) newAssign[slotIdx + '_' + (roomIdx - 1)] = state.assignments[k];
       });
+      state.assignments = newAssign;
       markDirty();
-      renderProfs();
-      renderPlanning();
+      renderAll();
     });
-  });
-  document.getElementById('btn-add-prof').addEventListener('click', () => {
-    const n = 'Prof ' + (state.profs.length + 1);
-    state.profs.push(n);
-    markDirty();
-    renderProfs();
-    renderPlanning();
   });
 }
 
+/* RENDER — Config slots */
 function renderSlotsConfig() {
   const container = document.getElementById('slots-config');
   let html = '';
   state.slots.forEach((slot, i) => {
-    html += '<div class="slot-row">';
-    html += '<input type="text" placeholder="Jour" value="' + escapeAttr(slot.day) + '" data-idx="' + i + '" data-field="day">';
-    html += '<input type="text" placeholder="Créneau (ex: 21h00 - 22h00)" value="' + escapeAttr(slot.time) + '" data-idx="' + i + '" data-field="time">';
-    html += '<button class="danger icon" data-idx="' + i + '" data-action="remove-slot">×</button>';
-    html += '</div>';
+    html += `<div class="slot-row">`;
+    html += `<input type="text" placeholder="Jour" value="${escapeAttr(slot.day)}" data-idx="${i}" data-field="day">`;
+    html += `<input type="text" placeholder="Créneau" value="${escapeAttr(slot.time)}" data-idx="${i}" data-field="time">`;
+    html += `<button class="danger icon" data-idx="${i}">×</button>`;
+    html += `</div>`;
   });
   container.innerHTML = html;
 
@@ -513,15 +837,14 @@ function renderSlotsConfig() {
       const f = e.target.dataset.field;
       state.slots[i][f] = e.target.value.trim();
       markDirty();
-      renderPlanning();
+      renderAll();
     });
   });
-  container.querySelectorAll('button[data-action="remove-slot"]').forEach(btn => {
+  container.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', e => {
       const i = parseInt(e.target.dataset.idx);
       if (!confirm('Supprimer ce créneau et ses affectations ?')) return;
       state.slots.splice(i, 1);
-      // Réindexe les assignments
       const newAssign = {};
       Object.keys(state.assignments).forEach(k => {
         const [slotIdx, roomIdx] = k.split('_').map(Number);
@@ -530,64 +853,203 @@ function renderSlotsConfig() {
       });
       state.assignments = newAssign;
       markDirty();
-      renderSlotsConfig();
-      renderPlanning();
+      renderAll();
     });
   });
 }
 
-function addSlot() {
-  state.slots.push({ day: 'Nouveau', time: '00h00 - 00h00' });
-  markDirty();
-  renderSlotsConfig();
+/* RENDER — Charts */
+function renderCharts() {
+  const stats = computeStats();
+
+  // STATS ROW
+  const statsHtml = `
+    <div class="stat-card accent">
+      <div class="stat-val">${stats.totalAssigned}</div>
+      <div class="stat-label">Cours assignés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">${stats.totalSlots - stats.totalAssigned}</div>
+      <div class="stat-label">Créneaux libres</div>
+    </div>
+    <div class="stat-card ${stats.fillRate >= 75 ? 'success' : stats.fillRate >= 40 ? 'warn' : 'danger'}">
+      <div class="stat-val">${stats.fillRate}%</div>
+      <div class="stat-label">Taux remplissage</div>
+    </div>
+    <div class="stat-card ${stats.profsWithoutCourses.length === 0 ? 'success' : 'warn'}">
+      <div class="stat-val">${stats.profsWithCourses.length}/${state.profs.length}</div>
+      <div class="stat-label">Profs actifs</div>
+    </div>
+  `;
+  document.getElementById('stats-row').innerHTML = statsHtml;
+
+  // CHART PROF LOAD
+  const maxLoad = Math.max(1, ...Object.values(stats.profLoad));
+  let html = '';
+  // Trie par charge décroissante
+  const sortedProfs = [...state.profs].sort((a, b) => (stats.profLoad[b] || 0) - (stats.profLoad[a] || 0));
+  sortedProfs.forEach(p => {
+    const v = stats.profLoad[p] || 0;
+    const pct = (v / maxLoad) * 100;
+    const cls = v === 0 ? 'zero' : (v >= maxLoad * 0.8 && maxLoad >= 3 ? 'high' : '');
+    html += `<div class="bar-row">
+      <div class="lbl" title="${escapeAttr(p)}">${escapeHtml(p)}</div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="val ${v === 0 ? 'muted' : ''}">${v}</div>
+    </div>`;
+  });
+  document.getElementById('chart-prof-load').innerHTML = html || '<div class="loading">Aucun prof</div>';
+
+  // CHART DAY LOAD
+  const maxDayLoad = Math.max(1, ...Object.values(stats.dayLoad));
+  const days = Object.keys(stats.dayLoad);
+  html = '';
+  days.forEach(d => {
+    const v = stats.dayLoad[d];
+    const profsUnique = stats.dayProfsUnique[d].size;
+    const pct = (v / maxDayLoad) * 100;
+    const cls = v === 0 ? 'zero' : '';
+    html += `<div class="bar-row">
+      <div class="lbl">${escapeHtml(d)}</div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="val ${v === 0 ? 'muted' : ''}">${v}</div>
+    </div>`;
+    html += `<div style="font-size:10px;color:var(--text-faint);margin:-4px 0 8px 128px">${profsUnique} prof${profsUnique > 1 ? 's' : ''} unique${profsUnique > 1 ? 's' : ''}</div>`;
+  });
+  document.getElementById('chart-day-load').innerHTML = html || '<div class="loading">Aucun jour</div>';
+
+  // CHART PROFS SANS COURS
+  const emptyContainer = document.getElementById('chart-empty-profs');
+  if (stats.profsWithoutCourses.length === 0) {
+    emptyContainer.innerHTML = `<div class="empty-list"><div class="all-good">✓ Tous les profs ont au moins un cours</div></div>`;
+  } else {
+    let h = '<div class="empty-list">';
+    stats.profsWithoutCourses.forEach(p => {
+      h += `<div class="empty-pill">${escapeHtml(p)}</div>`;
+    });
+    h += '</div>';
+    h += `<div style="font-size:11px;color:var(--text-faint);margin-top:10px">${stats.profsWithoutCourses.length} prof${stats.profsWithoutCourses.length > 1 ? 's' : ''} disponible${stats.profsWithoutCourses.length > 1 ? 's' : ''}</div>`;
+    emptyContainer.innerHTML = h;
+  }
+
+  // CHART ROOM LOAD
+  const maxRoomCapacity = state.slots.length;
+  html = '';
+  state.rooms.forEach(r => {
+    const v = stats.roomLoad[r] || 0;
+    const pct = maxRoomCapacity > 0 ? (v / maxRoomCapacity) * 100 : 0;
+    const cls = v === 0 ? 'zero' : (pct >= 80 ? 'high' : '');
+    html += `<div class="bar-row">
+      <div class="lbl">${escapeHtml(r)}</div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+      <div class="val ${v === 0 ? 'muted' : ''}">${v}/${maxRoomCapacity}</div>
+    </div>`;
+  });
+  document.getElementById('chart-room-load').innerHTML = html || '<div class="loading">Aucune salle</div>';
+
+  // PROF SCHEDULES
+  const schContainer = document.getElementById('prof-schedules');
+  let sh = '';
+  state.profs.forEach(p => {
+    const courses = stats.profSchedule[p] || [];
+    const cls = courses.length === 0 ? 'empty' : '';
+    sh += `<div class="prof-detail ${cls}">
+      <div class="prof-detail-head">
+        <div class="prof-detail-name">${escapeHtml(p)}</div>
+        <div class="prof-detail-count">${courses.length} cours</div>
+      </div>
+      <div class="prof-courses">`;
+    if (courses.length === 0) {
+      sh += `<span class="prof-course"><span class="none">aucun cours assigné</span></span>`;
+    } else {
+      courses.forEach(c => {
+        sh += `<span class="prof-course">${escapeHtml(c.day)} ${escapeHtml(c.time)} · <span class="room">${escapeHtml(c.room)}</span></span>`;
+      });
+    }
+    sh += `</div></div>`;
+  });
+  schContainer.innerHTML = sh;
+
+  // HEATMAP JOUR x SALLE
+  const heatContainer = document.getElementById('heatmap-rooms');
+  // Compte par jour × salle
+  const dayRoomCount = {};
+  const dayRoomTotal = {};
+  days.forEach(d => {
+    dayRoomCount[d] = {};
+    dayRoomTotal[d] = 0;
+    state.rooms.forEach(r => { dayRoomCount[d][r] = 0; });
+  });
+  state.slots.forEach((slot, sIdx) => {
+    state.rooms.forEach((room, rIdx) => {
+      const p = getAssignment(sIdx, rIdx);
+      if (p) {
+        dayRoomCount[slot.day][room]++;
+      }
+      dayRoomTotal[slot.day]++;
+    });
+  });
+
+  heatContainer.style.setProperty('--cols', state.rooms.length);
+  let hh = `<div class="heatmap" style="--cols:${state.rooms.length}">`;
+  hh += `<div class="heatmap-cell label-y">Jour \\ Salle</div>`;
+  state.rooms.forEach(r => hh += `<div class="heatmap-cell label-x">${escapeHtml(r)}</div>`);
+  days.forEach(d => {
+    hh += `<div class="heatmap-cell label-y">${escapeHtml(d)}</div>`;
+    state.rooms.forEach(r => {
+      const v = dayRoomCount[d][r];
+      const cls = v > 0 ? 'filled' : 'empty';
+      hh += `<div class="heatmap-cell data ${cls}">${v}</div>`;
+    });
+  });
+  hh += `</div>`;
+  hh += `<div style="font-size:11px;color:var(--text-faint);margin-top:8px">Nombre de cours assignés. Vide = salle non utilisée ce jour-là.</div>`;
+  heatContainer.innerHTML = hh;
+}
+
+function renderAll() {
+  renderProfs();
   renderPlanning();
+  renderRoomsConfig();
+  renderSlotsConfig();
+  renderCharts();
 }
 
-/* ─────────── HELPERS ─────────── */
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function escapeAttr(s) { return escapeHtml(s); }
-
-/* ─────────── GITHUB API ─────────── */
+/* GITHUB API */
 async function loadFromGitHub() {
   setStatus('Chargement…');
   try {
     const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}?ref=${CONFIG.branch}&t=${Date.now()}`;
     const res = await fetch(url);
     if (res.status === 404) {
-      // Fichier n'existe pas encore → on garde DEFAULT_DATA
       setStatus('Nouveau planning (non sauvegardé)', 'dirty');
-      dirty = true;
-      sha = null;
+      dirty = true; sha = null;
+      renderAll();
       return;
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     sha = json.sha;
     const content = atob(json.content.replace(/\s/g, ''));
-    const data = JSON.parse(decodeURIComponent(escape(content))); // UTF-8 safe
+    const data = JSON.parse(decodeURIComponent(escape(content)));
     state = Object.assign(JSON.parse(JSON.stringify(DEFAULT_DATA)), data);
     if (!state.assignments) state.assignments = {};
     dirty = false;
     setStatus('À jour', 'saved');
-    renderProfs();
-    renderSlotsConfig();
-    renderPlanning();
+    renderAll();
   } catch (e) {
     console.error(e);
     setStatus('Erreur de chargement', 'dirty');
     toast('Impossible de charger : ' + e.message, 'error');
-    renderProfs(); renderSlotsConfig(); renderPlanning();
+    renderAll();
   }
 }
 
 async function saveToGitHub(token) {
-  setStatus('Sauvegarde en cours…');
+  setStatus('Sauvegarde…');
   try {
     const content = JSON.stringify(state, null, 2);
     const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}`;
-    // UTF-8 safe base64
     const b64 = btoa(unescape(encodeURIComponent(content)));
     const body = {
       message: 'Mise à jour planning · ' + new Date().toLocaleString('fr-FR'),
@@ -616,17 +1078,16 @@ async function saveToGitHub(token) {
   } catch (e) {
     console.error(e);
     setStatus('Erreur de sauvegarde', 'dirty');
-    toast('Échec sauvegarde : ' + e.message, 'error');
+    toast('Échec : ' + e.message, 'error');
     throw e;
   }
 }
 
-/* ─────────── AUTH MODAL ─────────── */
+/* AUTH */
 function openAuthModal() {
   const modal = document.getElementById('auth-modal');
   modal.classList.add('show');
   document.getElementById('auth-err').classList.remove('show');
-  // Pré-remplit le token si présent en mémoire (24h)
   const cached = getCachedToken();
   if (cached) document.getElementById('auth-token').value = cached;
   setTimeout(() => document.getElementById('auth-password').focus(), 100);
@@ -635,7 +1096,6 @@ function closeAuthModal() {
   document.getElementById('auth-modal').classList.remove('show');
   document.getElementById('auth-password').value = '';
 }
-
 function getCachedToken() {
   try {
     const raw = localStorage.getItem('planning_token');
@@ -646,10 +1106,9 @@ function getCachedToken() {
   } catch { return null; }
 }
 function cacheToken(token) {
-  const exp = Date.now() + 24 * 60 * 60 * 1000; // 24h
+  const exp = Date.now() + 24 * 60 * 60 * 1000;
   localStorage.setItem('planning_token', JSON.stringify({ token, exp }));
 }
-
 async function submitAuth() {
   const password = document.getElementById('auth-password').value;
   const token = document.getElementById('auth-token').value.trim();
@@ -666,27 +1125,29 @@ async function submitAuth() {
     errEl.classList.add('show');
     return;
   }
-
   closeAuthModal();
   try {
     await saveToGitHub(token);
-    cacheToken(token); // mémorise 24h
-  } catch (e) {
-    // Le toast d'erreur s'est déjà affiché
-  }
+    cacheToken(token);
+  } catch (e) {}
 }
 
-/* ─────────── ÉVÉNEMENTS ─────────── */
+/* TABS */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+/* ÉVÉNEMENTS */
 document.getElementById('btn-save').addEventListener('click', () => {
-  if (!dirty) {
-    toast('Rien à sauvegarder.', '');
-    return;
-  }
+  if (!dirty) { toast('Rien à sauvegarder.', ''); return; }
   const cached = getCachedToken();
   if (cached) {
-    // Token déjà en cache → on demande juste le mot de passe ? Non, on save direct
     saveToGitHub(cached).catch(() => {
-      // Si échec (token expiré côté GitHub), on ouvre la modal
       localStorage.removeItem('planning_token');
       openAuthModal();
     });
@@ -700,15 +1161,30 @@ document.getElementById('btn-reload').addEventListener('click', () => {
   loadFromGitHub();
 });
 
-document.getElementById('btn-add-slot').addEventListener('click', addSlot);
-document.getElementById('btn-add-slot-config').addEventListener('click', addSlot);
+document.getElementById('btn-add-slot').addEventListener('click', () => {
+  state.slots.push({ day: 'Nouveau', time: '00h00 - 00h00' });
+  markDirty();
+  renderAll();
+});
 
-// Avertit si on quitte avec changements non sauvegardés
+document.getElementById('btn-add-room').addEventListener('click', () => {
+  let n = String.fromCharCode(65 + state.rooms.length); // E, F, G...
+  state.rooms.push('Salle ' + n);
+  markDirty();
+  renderAll();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('Vider toutes les affectations ? (les profs/salles/créneaux restent)')) return;
+  state.assignments = {};
+  markDirty();
+  renderAll();
+});
+
 window.addEventListener('beforeunload', e => {
   if (dirty) { e.preventDefault(); e.returnValue = ''; }
 });
 
-// Init
 loadFromGitHub();
 </script>
 
