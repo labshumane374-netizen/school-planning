@@ -104,8 +104,50 @@
     border-bottom: 2px solid var(--border);
   }
   .planning-table tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
+  .planning-table tbody tr.row-break:hover,
+  .planning-table tbody tr.row-meal:hover { background: transparent; }
   .planning-table .col-day { font-weight: 600; color: var(--text); width: 110px; }
   .planning-table .col-slot { color: var(--text-soft); font-size: 13px; width: 130px; }
+
+  /* Lignes pause / repas */
+  .row-break .col-day, .row-break .col-date, .row-break .col-slot,
+  .row-meal .col-day, .row-meal .col-date, .row-meal .col-slot {
+    color: var(--text-faint);
+    font-weight: 400;
+  }
+  .row-break td, .row-meal td {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 6px 12px;
+    font-size: 12.5px;
+  }
+  .break-cell {
+    text-align: center;
+    color: var(--text-faint);
+    font-style: italic;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .row-meal .break-cell {
+    color: var(--warn);
+  }
+  .row-break .break-cell {
+    color: var(--cyan);
+  }
+  .break-duration {
+    color: var(--text-faint);
+    font-style: normal;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 4px;
+  }
+  .day-separator td {
+    padding: 0;
+    height: 8px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+  }
 
   select.prof-select {
     width: 100%;
@@ -627,13 +669,20 @@ const CONFIG = {
 const DEFAULT_DATA = {
   rooms: ['Alpha', 'Beta', 'Gamma', 'Delta'],
   profs: ['Prof 1','Prof 2','Prof 3','Prof 4','Prof 5','Prof 6','Prof 7','Prof 8','Prof 9','Prof 10'],
+  // type: 'course' (assignable) | 'break' (récré) | 'meal' (repas)
   slots: [
-    { day: 'Mardi',    time: '21h00 - 22h00' },
-    { day: 'Mardi',    time: '22h00 - 23h00' },
-    { day: 'Mercredi', time: '21h00 - 22h00' },
-    { day: 'Mercredi', time: '22h00 - 23h00' },
-    { day: 'Samedi',   time: '21h00 - 22h00' },
-    { day: 'Samedi',   time: '22h00 - 23h00' }
+    { day: 'Mardi',    time: '21h00 - 22h00',  type: 'course' },
+    { day: 'Mardi',    time: '22h00 - 22h10',  type: 'break' },
+    { day: 'Mardi',    time: '22h10 - 22h40',  type: 'meal' },
+    { day: 'Mardi',    time: '22h40 - 23h40',  type: 'course' },
+    { day: 'Mercredi', time: '21h00 - 22h00',  type: 'course' },
+    { day: 'Mercredi', time: '22h00 - 22h10',  type: 'break' },
+    { day: 'Mercredi', time: '22h10 - 22h40',  type: 'meal' },
+    { day: 'Mercredi', time: '22h40 - 23h40',  type: 'course' },
+    { day: 'Samedi',   time: '21h00 - 22h00',  type: 'course' },
+    { day: 'Samedi',   time: '22h00 - 22h10',  type: 'break' },
+    { day: 'Samedi',   time: '22h10 - 22h40',  type: 'meal' },
+    { day: 'Samedi',   time: '22h40 - 23h40',  type: 'course' }
   ],
   // assignments[weekKey][slotIdx_roomIdx] = profName
   // weekKey = "YYYY-MM-DD" du lundi de la semaine
@@ -757,10 +806,14 @@ function computeStats() {
   const profSchedule = {}; // prof -> [{day,time,room}]
   state.profs.forEach(p => profSchedule[p] = []);
 
+  // On ne compte que les vrais cours (pas les pauses/repas)
+  const courseSlots = state.slots.filter(s => (s.type || 'course') === 'course');
   let totalAssigned = 0;
-  const totalSlots = state.slots.length * state.rooms.length;
+  const totalSlots = courseSlots.length * state.rooms.length;
 
   state.slots.forEach((slot, sIdx) => {
+    const type = slot.type || 'course';
+    if (type !== 'course') return;
     state.rooms.forEach((room, rIdx) => {
       const p = getAssignment(sIdx, rIdx);
       if (p && state.profs.includes(p)) {
@@ -867,9 +920,31 @@ function renderPlanning() {
   state.rooms.forEach(r => html += `<th>${escapeHtml(r)}</th>`);
   html += '</tr></thead><tbody>';
 
+  let lastDay = null;
   state.slots.forEach((slot, slotIdx) => {
     const date = dateForSlot(slot, currentWeekStart);
     const dateStr = date ? formatDay(date) : '—';
+    const type = slot.type || 'course';
+
+    // Séparateur visuel quand on change de jour
+    if (lastDay !== null && lastDay !== slot.day) {
+      html += `<tr class="day-separator"><td colspan="${3 + state.rooms.length}"></td></tr>`;
+    }
+    lastDay = slot.day;
+
+    if (type === 'break' || type === 'meal') {
+      const icon = type === 'break' ? '☕' : '🍽';
+      const label = type === 'break' ? 'Récréation' : 'Repas';
+      const cls = type === 'break' ? 'row-break' : 'row-meal';
+      html += `<tr class="${cls}">`;
+      html += `<td class="col-day">${escapeHtml(slot.day)}</td>`;
+      html += `<td class="col-date">${dateStr}</td>`;
+      html += `<td class="col-slot">${escapeHtml(slot.time)}</td>`;
+      html += `<td colspan="${state.rooms.length}" class="break-cell">${icon} ${label} <span class="break-duration">· ${type === 'break' ? '10 min' : '30 min'}</span></td>`;
+      html += '</tr>';
+      return;
+    }
+
     html += '<tr>';
     html += `<td class="col-day">${escapeHtml(slot.day)}</td>`;
     html += `<td class="col-date">${dateStr}</td>`;
@@ -946,15 +1021,21 @@ function renderSlotsConfig() {
   const container = document.getElementById('slots-config');
   let html = '';
   state.slots.forEach((slot, i) => {
-    html += `<div class="slot-row">`;
+    const type = slot.type || 'course';
+    html += `<div class="slot-row" style="grid-template-columns: 1fr 1fr 110px auto">`;
     html += `<input type="text" placeholder="Jour" value="${escapeAttr(slot.day)}" data-idx="${i}" data-field="day">`;
     html += `<input type="text" placeholder="Créneau" value="${escapeAttr(slot.time)}" data-idx="${i}" data-field="time">`;
+    html += `<select data-idx="${i}" data-field="type" class="slot-type-select" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:7px 10px;border-radius:6px;font:inherit;font-size:13px;">`;
+    html += `<option value="course"${type==='course'?' selected':''}>📚 Cours</option>`;
+    html += `<option value="break"${type==='break'?' selected':''}>☕ Récré</option>`;
+    html += `<option value="meal"${type==='meal'?' selected':''}>🍽 Repas</option>`;
+    html += `</select>`;
     html += `<button class="danger icon" data-idx="${i}">×</button>`;
     html += `</div>`;
   });
   container.innerHTML = html;
 
-  container.querySelectorAll('input').forEach(inp => {
+  container.querySelectorAll('input, select').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = parseInt(e.target.dataset.idx);
       const f = e.target.dataset.field;
@@ -1056,7 +1137,7 @@ function renderCharts() {
   }
 
   // CHART ROOM LOAD
-  const maxRoomCapacity = state.slots.length;
+  const maxRoomCapacity = state.slots.filter(s => (s.type || 'course') === 'course').length;
   html = '';
   state.rooms.forEach(r => {
     const v = stats.roomLoad[r] || 0;
@@ -1104,6 +1185,7 @@ function renderCharts() {
     state.rooms.forEach(r => { dayRoomCount[d][r] = 0; });
   });
   state.slots.forEach((slot, sIdx) => {
+    if ((slot.type || 'course') !== 'course') return;
     state.rooms.forEach((room, rIdx) => {
       const p = getAssignment(sIdx, rIdx);
       if (p) {
@@ -1182,6 +1264,40 @@ async function loadFromGitHub() {
       state.assignments = migrated;
     }
     if (!state.startDate) state.startDate = '2026-06-01';
+
+    // Migration slots sans type : on insère pauses+repas entre les paires de cours du même jour
+    const hasTypes = state.slots.some(s => s.type);
+    if (!hasTypes) {
+      const newSlots = [];
+      const remapping = {}; // oldIdx -> newIdx
+      let prevDay = null, prevCourseInDay = 0;
+      state.slots.forEach((s, oldIdx) => {
+        if (s.day !== prevDay) { prevCourseInDay = 0; }
+        if (prevCourseInDay === 1 && s.day === prevDay) {
+          // Insère récré + repas entre les deux cours du même jour
+          newSlots.push({ day: s.day, time: '22h00 - 22h10', type: 'break' });
+          newSlots.push({ day: s.day, time: '22h10 - 22h40', type: 'meal' });
+          // Décale aussi l'heure du 2e cours si elle était 22h00-23h00
+          if (s.time === '22h00 - 23h00') s = Object.assign({}, s, { time: '22h40 - 23h40' });
+        }
+        remapping[oldIdx] = newSlots.length;
+        newSlots.push(Object.assign({ type: 'course' }, s));
+        prevDay = s.day;
+        prevCourseInDay++;
+      });
+      state.slots = newSlots;
+      // Remappe les assignments
+      Object.keys(state.assignments).forEach(wk => {
+        const oldA = state.assignments[wk];
+        const newA = {};
+        Object.keys(oldA).forEach(k => {
+          const [si, ri] = k.split('_').map(Number);
+          const newSi = remapping[si];
+          if (newSi !== undefined) newA[newSi + '_' + ri] = oldA[k];
+        });
+        state.assignments[wk] = newA;
+      });
+    }
     initWeekStart();
     dirty = false;
     setStatus('À jour', 'saved');
@@ -1320,7 +1436,7 @@ document.getElementById('btn-reload').addEventListener('click', () => {
 });
 
 document.getElementById('btn-add-slot').addEventListener('click', () => {
-  state.slots.push({ day: 'Nouveau', time: '00h00 - 00h00' });
+  state.slots.push({ day: 'Nouveau', time: '00h00 - 00h00', type: 'course' });
   markDirty();
   renderAll();
 });
