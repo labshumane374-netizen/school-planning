@@ -1,0 +1,13 @@
+﻿{
+  "rooms": ["Alpha", "Beta", "Gamma", "Delta"],
+  "profs": ["Prof 1","Prof 2","Prof 3","Prof 4","Prof 5","Prof 6","Prof 7","Prof 8","Prof 9","Prof 10"],
+  "slots": [
+    { "day": "Mardi",    "time": "21h00 - 22h00" },
+    { "day": "Mardi",    "time": "22h00 - 23h00" },
+    { "day": "Mercredi", "time": "21h00 - 22h00" },
+    { "day": "Mercredi", "time": "22h00 - 23h00" },
+    { "day": "Samedi",   "time": "21h00 - 22h00" },
+    { "day": "Samedi",   "time": "22h00 - 23h00" }
+  ],
+  "assignments": {}
+}

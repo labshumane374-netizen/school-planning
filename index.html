@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planning des Cours — Oryxis School</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #334155;
+    --border: #475569;
+    --text: #f1f5f9;
+    --text-soft: #cbd5e1;
+    --text-faint: #94a3b8;
+    --accent: #3b82f6;
+    --accent-soft: #60a5fa;
+    --success: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px;
+    line-height: 1.5;
+  }
+
+  .wrap { max-width: 1100px; margin: 0 auto; }
+
+  /* Header */
+  header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+    border-bottom: 2px solid var(--border); padding-bottom: 16px;
+  }
+  h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  h1 .sub { display: block; font-size: 12px; color: var(--text-faint); font-weight: 400; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .status {
+    font-size: 12px; color: var(--text-faint);
+    background: var(--panel); padding: 6px 12px; border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  .status.dirty { color: var(--warn); border-color: var(--warn); }
+  .status.saved { color: var(--success); border-color: var(--success); }
+
+  /* Sections */
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  section h2 {
+    font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 14px; font-weight: 600;
+  }
+
+  /* Planning grid */
+  .planning-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  .planning-table th, .planning-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .planning-table thead th {
+    background: var(--panel-2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-soft);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+  }
+  .planning-table tbody tr:hover { background: rgba(59, 130, 246, 0.04); }
+  .planning-table .col-day { font-weight: 600; color: var(--text); width: 110px; }
+  .planning-table .col-slot { color: var(--text-soft); font-family: 'Inter', monospace; width: 130px; font-size: 13px; }
+
+  /* Select */
+  select.prof-select {
+    width: 100%;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  select.prof-select:hover { border-color: var(--accent); }
+  select.prof-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+  select.prof-select option { background: var(--panel); color: var(--text); }
+  select.prof-select.empty { color: var(--text-faint); }
+  select.prof-select.assigned { color: var(--accent-soft); border-color: var(--accent); background: rgba(59, 130, 246, 0.08); }
+
+  /* Actions */
+  .actions {
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    margin-top: 18px;
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+  }
+  button:hover { background: var(--accent-soft); transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+  button.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  button.secondary:hover { background: var(--border); }
+  button.danger { background: var(--danger); }
+  button.danger:hover { background: #f87171; }
+  button.icon { padding: 6px 10px; font-size: 12px; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Profs / Slots list */
+  .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .pill {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 6px 10px 6px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pill input {
+    background: transparent;
+    color: var(--text);
+    border: none;
+    font: inherit;
+    width: 90px;
+    padding: 0;
+  }
+  .pill input:focus { outline: none; }
+  .pill .remove {
+    background: transparent;
+    color: var(--text-faint);
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .pill .remove:hover { color: var(--danger); }
+
+  .add-pill {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px dashed var(--accent);
+    color: var(--accent-soft);
+    padding: 6px 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .add-pill:hover { background: rgba(59, 130, 246, 0.2); }
+
+  /* Slot rows config */
+  .slot-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .slot-row input {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 13px;
+  }
+  .slot-row input:focus { outline: none; border-color: var(--accent); }
+
+  /* Modal */
+  .modal-bg {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .modal h3 { font-size: 18px; margin-bottom: 8px; }
+  .modal p { color: var(--text-soft); margin-bottom: 16px; font-size: 14px; }
+  .modal label {
+    display: block; font-size: 12px; color: var(--text-faint);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; margin-top: 14px;
+  }
+  .modal input {
+    width: 100%;
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font: inherit; font-size: 14px;
+    font-family: monospace;
+  }
+  .modal input:focus { outline: none; border-color: var(--accent); }
+  .modal .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .modal .hint {
+    font-size: 11px; color: var(--text-faint);
+    background: var(--bg); padding: 8px 10px; border-radius: 4px;
+    margin-top: 8px; line-height: 1.5;
+  }
+  .modal .hint a { color: var(--accent-soft); }
+  .modal .err {
+    color: var(--danger); font-size: 13px; margin-top: 10px; display: none;
+  }
+  .modal .err.show { display: block; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); padding: 12px 18px; border-radius: 8px;
+    font-size: 13px; z-index: 200;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    max-width: 360px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--success); color: var(--success); }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+
+  /* Compact mode */
+  @media (max-width: 700px) {
+    .planning-table th, .planning-table td { padding: 6px 8px; font-size: 12px; }
+    .planning-table .col-day { width: 80px; }
+    .planning-table .col-slot { width: 100px; font-size: 11px; }
+    select.prof-select { font-size: 12px; padding: 5px 8px; }
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .loading { color: var(--text-faint); font-size: 13px; padding: 12px; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <h1>Planning des Cours<span class="sub">Oryxis School</span></h1>
+    <div class="status" id="status">Chargement…</div>
+  </header>
+
+  <!-- PLANNING -->
+  <section>
+    <h2>Cours programmés</h2>
+    <div id="planning-container">
+      <div class="loading">Chargement du planning…</div>
+    </div>
+    <div class="actions">
+      <button id="btn-save">💾 Sauvegarder sur GitHub</button>
+      <button class="secondary" id="btn-reload">🔄 Recharger</button>
+      <button class="secondary icon" id="btn-add-slot">+ Créneau</button>
+    </div>
+  </section>
+
+  <!-- PROFS -->
+  <section>
+    <h2>Liste des profs</h2>
+    <div class="pill-list" id="profs-list"></div>
+  </section>
+
+  <!-- CRÉNEAUX -->
+  <section>
+    <h2>Configuration des créneaux</h2>
+    <div id="slots-config"></div>
+    <button class="secondary icon" id="btn-add-slot-config" style="margin-top:8px">+ Ajouter un créneau</button>
+  </section>
+
+  <div class="footer">Oryxis School · Planning v1</div>
+
+</div>
+
+<!-- Modal d'authentification -->
+<div class="modal-bg" id="auth-modal">
+  <div class="modal">
+    <h3>Authentification requise</h3>
+    <p>Pour modifier le planning partagé, entrez le mot de passe et votre token GitHub.</p>
+
+    <label>Mot de passe</label>
+    <input type="password" id="auth-password" placeholder="Mot de passe">
+
+    <label>GitHub Token (PAT)</label>
+    <input type="password" id="auth-token" placeholder="ghp_...">
+    <div class="hint">
+      Token avec scope <code>repo</code>. Crée-le sur <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens</a>.
+      Il sera mémorisé 24h dans ton navigateur.
+    </div>
+
+    <div class="err" id="auth-err">Mot de passe ou token incorrect.</div>
+
+    <div class="modal-actions">
+      <button class="secondary" onclick="closeAuthModal()">Annuler</button>
+      <button onclick="submitAuth()">Valider et sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────── CONFIG ─────────── */
+const CONFIG = {
+  owner: 'labshumane374-netizen',
+  repo: 'school-planning',
+  path: 'planning.json',
+  branch: 'main',
+  // Mot de passe simple (modifie-le, c'est juste un garde-fou ergonomique)
+  password: 'oryxis2026'
+};
+
+/* ─────────── DONNÉES PAR DÉFAUT ─────────── */
+const DEFAULT_DATA = {
+  rooms: ['Alpha', 'Beta', 'Gamma', 'Delta'],
+  profs: ['Prof 1','Prof 2','Prof 3','Prof 4','Prof 5','Prof 6','Prof 7','Prof 8','Prof 9','Prof 10'],
+  slots: [
+    { day: 'Mardi',    time: '21h00 - 22h00' },
+    { day: 'Mardi',    time: '22h00 - 23h00' },
+    { day: 'Mercredi', time: '21h00 - 22h00' },
+    { day: 'Mercredi', time: '22h00 - 23h00' },
+    { day: 'Samedi',   time: '21h00 - 22h00' },
+    { day: 'Samedi',   time: '22h00 - 23h00' }
+  ],
+  // assignments[slotIndex][roomIndex] = profName ou ''
+  assignments: {}
+};
+
+let state = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let sha = null;
+let dirty = false;
+
+/* ─────────── UI ─────────── */
+function setStatus(text, cls) {
+  const el = document.getElementById('status');
+  el.textContent = text;
+  el.className = 'status ' + (cls || '');
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (type || '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function markDirty() {
+  dirty = true;
+  setStatus('Modifications non sauvegardées', 'dirty');
+}
+
+function getAssignment(slotIdx, roomIdx) {
+  const key = slotIdx + '_' + roomIdx;
+  return (state.assignments && state.assignments[key]) || '';
+}
+
+function setAssignment(slotIdx, roomIdx, value) {
+  if (!state.assignments) state.assignments = {};
+  state.assignments[slotIdx + '_' + roomIdx] = value;
+  markDirty();
+}
+
+function renderPlanning() {
+  const container = document.getElementById('planning-container');
+  let html = '<table class="planning-table"><thead><tr>';
+  html += '<th class="col-day">Jour</th><th class="col-slot">Créneau</th>';
+  state.rooms.forEach(r => html += '<th>' + escapeHtml(r) + '</th>');
+  html += '</tr></thead><tbody>';
+
+  state.slots.forEach((slot, slotIdx) => {
+    html += '<tr>';
+    html += '<td class="col-day">' + escapeHtml(slot.day) + '</td>';
+    html += '<td class="col-slot">' + escapeHtml(slot.time) + '</td>';
+    state.rooms.forEach((room, roomIdx) => {
+      const current = getAssignment(slotIdx, roomIdx);
+      html += '<td><select class="prof-select ' + (current ? 'assigned' : 'empty') + '" data-slot="' + slotIdx + '" data-room="' + roomIdx + '">';
+      html += '<option value="">— libre —</option>';
+      state.profs.forEach(p => {
+        html += '<option value="' + escapeAttr(p) + '"' + (p === current ? ' selected' : '') + '>' + escapeHtml(p) + '</option>';
+      });
+      html += '</select></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+
+  container.innerHTML = html;
+
+  container.querySelectorAll('select.prof-select').forEach(sel => {
+    sel.addEventListener('change', e => {
+      const slotIdx = parseInt(e.target.dataset.slot);
+      const roomIdx = parseInt(e.target.dataset.room);
+      setAssignment(slotIdx, roomIdx, e.target.value);
+      e.target.className = 'prof-select ' + (e.target.value ? 'assigned' : 'empty');
+    });
+  });
+}
+
+function renderProfs() {
+  const container = document.getElementById('profs-list');
+  let html = '';
+  state.profs.forEach((p, i) => {
+    html += '<div class="pill">';
+    html += '<input type="text" value="' + escapeAttr(p) + '" data-idx="' + i + '">';
+    html += '<button class="remove" data-idx="' + i + '" title="Supprimer">×</button>';
+    html += '</div>';
+  });
+  html += '<button class="add-pill" id="btn-add-prof">+ Ajouter un prof</button>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('.pill input').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const i = parseInt(e.target.dataset.idx);
+      const oldName = state.profs[i];
+      const newName = e.target.value.trim();
+      if (!newName) { e.target.value = oldName; return; }
+      state.profs[i] = newName;
+      // Met à jour les affectations qui utilisent l'ancien nom
+      Object.keys(state.assignments).forEach(k => {
+        if (state.assignments[k] === oldName) state.assignments[k] = newName;
+      });
+      markDirty();
+      renderPlanning();
+    });
+  });
+  container.querySelectorAll('.pill .remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const i = parseInt(e.target.dataset.idx);
+      const name = state.profs[i];
+      if (!confirm('Supprimer "' + name + '" de la liste ?')) return;
+      state.profs.splice(i, 1);
+      Object.keys(state.assignments).forEach(k => {
+        if (state.assignments[k] === name) state.assignments[k] = '';
+      });
+      markDirty();
+      renderProfs();
+      renderPlanning();
+    });
+  });
+  document.getElementById('btn-add-prof').addEventListener('click', () => {
+    const n = 'Prof ' + (state.profs.length + 1);
+    state.profs.push(n);
+    markDirty();
+    renderProfs();
+    renderPlanning();
+  });
+}
+
+function renderSlotsConfig() {
+  const container = document.getElementById('slots-config');
+  let html = '';
+  state.slots.forEach((slot, i) => {
+    html += '<div class="slot-row">';
+    html += '<input type="text" placeholder="Jour" value="' + escapeAttr(slot.day) + '" data-idx="' + i + '" data-field="day">';
+    html += '<input type="text" placeholder="Créneau (ex: 21h00 - 22h00)" value="' + escapeAttr(slot.time) + '" data-idx="' + i + '" data-field="time">';
+    html += '<button class="danger icon" data-idx="' + i + '" data-action="remove-slot">×</button>';
+    html += '</div>';
+  });
+  container.innerHTML = html;
+
+  container.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const i = parseInt(e.target.dataset.idx);
+      const f = e.target.dataset.field;
+      state.slots[i][f] = e.target.value.trim();
+      markDirty();
+      renderPlanning();
+    });
+  });
+  container.querySelectorAll('button[data-action="remove-slot"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const i = parseInt(e.target.dataset.idx);
+      if (!confirm('Supprimer ce créneau et ses affectations ?')) return;
+      state.slots.splice(i, 1);
+      // Réindexe les assignments
+      const newAssign = {};
+      Object.keys(state.assignments).forEach(k => {
+        const [slotIdx, roomIdx] = k.split('_').map(Number);
+        if (slotIdx < i) newAssign[k] = state.assignments[k];
+        else if (slotIdx > i) newAssign[(slotIdx - 1) + '_' + roomIdx] = state.assignments[k];
+      });
+      state.assignments = newAssign;
+      markDirty();
+      renderSlotsConfig();
+      renderPlanning();
+    });
+  });
+}
+
+function addSlot() {
+  state.slots.push({ day: 'Nouveau', time: '00h00 - 00h00' });
+  markDirty();
+  renderSlotsConfig();
+  renderPlanning();
+}
+
+/* ─────────── HELPERS ─────────── */
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
+/* ─────────── GITHUB API ─────────── */
+async function loadFromGitHub() {
+  setStatus('Chargement…');
+  try {
+    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}?ref=${CONFIG.branch}&t=${Date.now()}`;
+    const res = await fetch(url);
+    if (res.status === 404) {
+      // Fichier n'existe pas encore → on garde DEFAULT_DATA
+      setStatus('Nouveau planning (non sauvegardé)', 'dirty');
+      dirty = true;
+      sha = null;
+      return;
+    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    sha = json.sha;
+    const content = atob(json.content.replace(/\s/g, ''));
+    const data = JSON.parse(decodeURIComponent(escape(content))); // UTF-8 safe
+    state = Object.assign(JSON.parse(JSON.stringify(DEFAULT_DATA)), data);
+    if (!state.assignments) state.assignments = {};
+    dirty = false;
+    setStatus('À jour', 'saved');
+    renderProfs();
+    renderSlotsConfig();
+    renderPlanning();
+  } catch (e) {
+    console.error(e);
+    setStatus('Erreur de chargement', 'dirty');
+    toast('Impossible de charger : ' + e.message, 'error');
+    renderProfs(); renderSlotsConfig(); renderPlanning();
+  }
+}
+
+async function saveToGitHub(token) {
+  setStatus('Sauvegarde en cours…');
+  try {
+    const content = JSON.stringify(state, null, 2);
+    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.path}`;
+    // UTF-8 safe base64
+    const b64 = btoa(unescape(encodeURIComponent(content)));
+    const body = {
+      message: 'Mise à jour planning · ' + new Date().toLocaleString('fr-FR'),
+      content: b64,
+      branch: CONFIG.branch
+    };
+    if (sha) body.sha = sha;
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || ('HTTP ' + res.status));
+    }
+    const result = await res.json();
+    sha = result.content.sha;
+    dirty = false;
+    setStatus('Sauvegardé', 'saved');
+    toast('✓ Planning sauvegardé sur GitHub', 'success');
+  } catch (e) {
+    console.error(e);
+    setStatus('Erreur de sauvegarde', 'dirty');
+    toast('Échec sauvegarde : ' + e.message, 'error');
+    throw e;
+  }
+}
+
+/* ─────────── AUTH MODAL ─────────── */
+function openAuthModal() {
+  const modal = document.getElementById('auth-modal');
+  modal.classList.add('show');
+  document.getElementById('auth-err').classList.remove('show');
+  // Pré-remplit le token si présent en mémoire (24h)
+  const cached = getCachedToken();
+  if (cached) document.getElementById('auth-token').value = cached;
+  setTimeout(() => document.getElementById('auth-password').focus(), 100);
+}
+function closeAuthModal() {
+  document.getElementById('auth-modal').classList.remove('show');
+  document.getElementById('auth-password').value = '';
+}
+
+function getCachedToken() {
+  try {
+    const raw = localStorage.getItem('planning_token');
+    if (!raw) return null;
+    const { token, exp } = JSON.parse(raw);
+    if (Date.now() > exp) { localStorage.removeItem('planning_token'); return null; }
+    return token;
+  } catch { return null; }
+}
+function cacheToken(token) {
+  const exp = Date.now() + 24 * 60 * 60 * 1000; // 24h
+  localStorage.setItem('planning_token', JSON.stringify({ token, exp }));
+}
+
+async function submitAuth() {
+  const password = document.getElementById('auth-password').value;
+  const token = document.getElementById('auth-token').value.trim();
+  const errEl = document.getElementById('auth-err');
+  errEl.classList.remove('show');
+
+  if (password !== CONFIG.password) {
+    errEl.textContent = 'Mot de passe incorrect.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!token || !token.startsWith('gh')) {
+    errEl.textContent = 'Token GitHub invalide.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  closeAuthModal();
+  try {
+    await saveToGitHub(token);
+    cacheToken(token); // mémorise 24h
+  } catch (e) {
+    // Le toast d'erreur s'est déjà affiché
+  }
+}
+
+/* ─────────── ÉVÉNEMENTS ─────────── */
+document.getElementById('btn-save').addEventListener('click', () => {
+  if (!dirty) {
+    toast('Rien à sauvegarder.', '');
+    return;
+  }
+  const cached = getCachedToken();
+  if (cached) {
+    // Token déjà en cache → on demande juste le mot de passe ? Non, on save direct
+    saveToGitHub(cached).catch(() => {
+      // Si échec (token expiré côté GitHub), on ouvre la modal
+      localStorage.removeItem('planning_token');
+      openAuthModal();
+    });
+  } else {
+    openAuthModal();
+  }
+});
+
+document.getElementById('btn-reload').addEventListener('click', () => {
+  if (dirty && !confirm('Tu as des modifications non sauvegardées. Recharger ?')) return;
+  loadFromGitHub();
+});
+
+document.getElementById('btn-add-slot').addEventListener('click', addSlot);
+document.getElementById('btn-add-slot-config').addEventListener('click', addSlot);
+
+// Avertit si on quitte avec changements non sauvegardés
+window.addEventListener('beforeunload', e => {
+  if (dirty) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// Init
+loadFromGitHub();
+</script>
+
+</body>
+</html>
