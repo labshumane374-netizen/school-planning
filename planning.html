@@ -121,6 +121,33 @@
   select.prof-select.empty { color: var(--text-faint); }
   select.prof-select.assigned { color: var(--accent-soft); border-color: var(--accent); background: rgba(59, 130, 246, 0.08); }
 
+  /* Week nav */
+  .week-nav {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .week-label {
+    flex: 1; min-width: 200px;
+    text-align: center;
+    font-weight: 600; font-size: 15px; color: var(--text);
+    background: var(--bg);
+    padding: 8px 14px; border-radius: 6px;
+    border: 1px solid var(--border);
+    letter-spacing: 0.3px;
+  }
+  .week-label .badge-week {
+    display: inline-block;
+    background: var(--accent-dim); color: var(--accent-soft);
+    font-size: 11px; padding: 2px 8px;
+    border-radius: 10px; margin-left: 8px;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+  .col-date {
+    color: var(--accent-soft);
+    font-size: 12px; font-weight: 500;
+    width: 100px;
+  }
+
   /* Actions */
   .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
   button {
@@ -457,6 +484,16 @@
     <!-- Planning grille -->
     <section>
       <h2>Cours programmés</h2>
+      <div class="week-nav">
+        <button class="secondary icon" id="btn-prev-week">‹ Semaine préc.</button>
+        <div class="week-label" id="week-label">—</div>
+        <button class="secondary icon" id="btn-next-week">Semaine suiv. ›</button>
+      </div>
+      <div class="week-nav" style="margin-top:-4px">
+        <button class="secondary icon" id="btn-today">📅 Aujourd'hui</button>
+        <button class="secondary icon" id="btn-copy-prev" title="Copier les affectations de la semaine précédente">📋 Copier semaine préc.</button>
+        <button class="secondary icon" id="btn-clear-week" title="Vider cette semaine">🗑 Vider cette semaine</button>
+      </div>
       <div id="planning-container">
         <div class="loading">Chargement du planning…</div>
       </div>
@@ -532,9 +569,18 @@
     </section>
 
     <section>
+      <h2>Date de début</h2>
+      <p style="color:var(--text-faint); font-size:13px; margin-bottom:12px">Premier lundi de la première semaine. Définit la numérotation des semaines.</p>
+      <div class="slot-row" style="grid-template-columns: 200px 1fr">
+        <input type="date" id="cfg-start-date" value="2026-06-01">
+        <div style="color:var(--text-faint); font-size:12px; align-self:center" id="cfg-start-date-info"></div>
+      </div>
+    </section>
+
+    <section>
       <h2>Tout réinitialiser</h2>
-      <p style="color:var(--text-faint); font-size:13px; margin-bottom:12px">Supprime toutes les affectations (mais garde profs/salles/créneaux).</p>
-      <button class="danger" id="btn-reset">⚠ Vider le planning</button>
+      <p style="color:var(--text-faint); font-size:13px; margin-bottom:12px">Supprime toutes les affectations sur TOUTES les semaines (mais garde profs/salles/créneaux).</p>
+      <button class="danger" id="btn-reset">⚠ Vider toutes les semaines</button>
     </section>
   </div>
 
@@ -589,12 +635,67 @@ const DEFAULT_DATA = {
     { day: 'Samedi',   time: '21h00 - 22h00' },
     { day: 'Samedi',   time: '22h00 - 23h00' }
   ],
-  assignments: {}
+  // assignments[weekKey][slotIdx_roomIdx] = profName
+  // weekKey = "YYYY-MM-DD" du lundi de la semaine
+  assignments: {},
+  startDate: '2026-06-01' // lundi de la première semaine
 };
 
 let state = JSON.parse(JSON.stringify(DEFAULT_DATA));
 let sha = null;
 let dirty = false;
+let currentWeekStart = null; // Date du lundi affiché
+
+/* DATES */
+const DAY_INDEX = {
+  'Lundi': 0, 'Mardi': 1, 'Mercredi': 2, 'Jeudi': 3,
+  'Vendredi': 4, 'Samedi': 5, 'Dimanche': 6
+};
+const MONTH_SHORT = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+
+function parseDate(str) {
+  // "YYYY-MM-DD" -> Date (UTC pour éviter dérives timezone)
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+function formatDateKey(date) {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(date.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+function getMonday(date) {
+  const d = new Date(date.getTime());
+  const dow = d.getUTCDay(); // 0=dimanche, 1=lundi…
+  const diff = dow === 0 ? -6 : 1 - dow;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d;
+}
+function addDays(date, n) {
+  const d = new Date(date.getTime());
+  d.setUTCDate(d.getUTCDate() + n);
+  return d;
+}
+function formatDay(date) {
+  // ex: "mar. 2 juin"
+  const dayNames = ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  return `${dayNames[date.getUTCDay()]} ${date.getUTCDate()} ${MONTH_SHORT[date.getUTCMonth()]}`;
+}
+function formatWeekRange(monday) {
+  const sunday = addDays(monday, 6);
+  if (monday.getUTCMonth() === sunday.getUTCMonth()) {
+    return `${monday.getUTCDate()} – ${sunday.getUTCDate()} ${MONTH_SHORT[monday.getUTCMonth()]} ${monday.getUTCFullYear()}`;
+  }
+  return `${monday.getUTCDate()} ${MONTH_SHORT[monday.getUTCMonth()]} – ${sunday.getUTCDate()} ${MONTH_SHORT[sunday.getUTCMonth()]} ${monday.getUTCFullYear()}`;
+}
+function dateForSlot(slot, weekStart) {
+  const offset = DAY_INDEX[slot.day];
+  if (offset === undefined) return null;
+  return addDays(weekStart, offset);
+}
+function weekKey() {
+  return formatDateKey(currentWeekStart);
+}
 
 /* HELPERS */
 function escapeHtml(s) {
@@ -603,12 +704,21 @@ function escapeHtml(s) {
 function escapeAttr(s) { return escapeHtml(s); }
 
 function getAssignment(slotIdx, roomIdx) {
+  const wk = weekKey();
   const key = slotIdx + '_' + roomIdx;
-  return (state.assignments && state.assignments[key]) || '';
+  return (state.assignments && state.assignments[wk] && state.assignments[wk][key]) || '';
 }
 function setAssignment(slotIdx, roomIdx, value) {
   if (!state.assignments) state.assignments = {};
-  state.assignments[slotIdx + '_' + roomIdx] = value;
+  const wk = weekKey();
+  if (!state.assignments[wk]) state.assignments[wk] = {};
+  const key = slotIdx + '_' + roomIdx;
+  if (value) {
+    state.assignments[wk][key] = value;
+  } else {
+    delete state.assignments[wk][key];
+    if (Object.keys(state.assignments[wk]).length === 0) delete state.assignments[wk];
+  }
   markDirty();
   renderCharts();
 }
@@ -741,15 +851,28 @@ function renderProfs() {
 
 /* RENDER — Planning grid */
 function renderPlanning() {
+  // Met à jour le label de semaine
+  const wkLabel = document.getElementById('week-label');
+  if (wkLabel) {
+    const startDate = parseDate(state.startDate || '2026-06-01');
+    const diffDays = Math.round((currentWeekStart - startDate) / (1000 * 60 * 60 * 24));
+    const weekNum = Math.floor(diffDays / 7) + 1;
+    const weekBadge = weekNum >= 1 ? `<span class="badge-week">Semaine ${weekNum}</span>` : '';
+    wkLabel.innerHTML = `${formatWeekRange(currentWeekStart)}${weekBadge}`;
+  }
+
   const container = document.getElementById('planning-container');
   let html = '<table class="planning-table"><thead><tr>';
-  html += '<th class="col-day">Jour</th><th class="col-slot">Créneau</th>';
+  html += '<th class="col-day">Jour</th><th class="col-date">Date</th><th class="col-slot">Créneau</th>';
   state.rooms.forEach(r => html += `<th>${escapeHtml(r)}</th>`);
   html += '</tr></thead><tbody>';
 
   state.slots.forEach((slot, slotIdx) => {
+    const date = dateForSlot(slot, currentWeekStart);
+    const dateStr = date ? formatDay(date) : '—';
     html += '<tr>';
     html += `<td class="col-day">${escapeHtml(slot.day)}</td>`;
+    html += `<td class="col-date">${dateStr}</td>`;
     html += `<td class="col-slot">${escapeHtml(slot.time)}</td>`;
     state.rooms.forEach((room, roomIdx) => {
       const current = getAssignment(slotIdx, roomIdx);
@@ -1012,7 +1135,21 @@ function renderAll() {
   renderPlanning();
   renderRoomsConfig();
   renderSlotsConfig();
+  renderStartDateInput();
   renderCharts();
+}
+
+function renderStartDateInput() {
+  const inp = document.getElementById('cfg-start-date');
+  if (!inp) return;
+  inp.value = state.startDate || '2026-06-01';
+  const info = document.getElementById('cfg-start-date-info');
+  if (info) {
+    const d = parseDate(inp.value);
+    const dayNames = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+    info.textContent = `→ ${dayNames[d.getUTCDay()]}`;
+    if (d.getUTCDay() !== 1) info.textContent += ' ⚠ devrait être un lundi';
+  }
 }
 
 /* GITHUB API */
@@ -1024,6 +1161,7 @@ async function loadFromGitHub() {
     if (res.status === 404) {
       setStatus('Nouveau planning (non sauvegardé)', 'dirty');
       dirty = true; sha = null;
+      initWeekStart();
       renderAll();
       return;
     }
@@ -1034,6 +1172,17 @@ async function loadFromGitHub() {
     const data = JSON.parse(decodeURIComponent(escape(content)));
     state = Object.assign(JSON.parse(JSON.stringify(DEFAULT_DATA)), data);
     if (!state.assignments) state.assignments = {};
+    // Migration : ancien format {slot_room: prof} -> {weekKey: {slot_room: prof}}
+    const keys = Object.keys(state.assignments);
+    const isOldFormat = keys.length > 0 && keys.every(k => /^\d+_\d+$/.test(k));
+    if (isOldFormat) {
+      const startKey = state.startDate || '2026-06-01';
+      const migrated = {};
+      migrated[startKey] = state.assignments;
+      state.assignments = migrated;
+    }
+    if (!state.startDate) state.startDate = '2026-06-01';
+    initWeekStart();
     dirty = false;
     setStatus('À jour', 'saved');
     renderAll();
@@ -1041,8 +1190,17 @@ async function loadFromGitHub() {
     console.error(e);
     setStatus('Erreur de chargement', 'dirty');
     toast('Impossible de charger : ' + e.message, 'error');
+    initWeekStart();
     renderAll();
   }
+}
+
+function initWeekStart() {
+  if (currentWeekStart) return; // déjà initialisé
+  const today = getMonday(new Date());
+  const start = parseDate(state.startDate || '2026-06-01');
+  // Si on est avant le début, on affiche la première semaine
+  currentWeekStart = today >= start ? today : start;
 }
 
 async function saveToGitHub(token) {
@@ -1167,6 +1325,51 @@ document.getElementById('btn-add-slot').addEventListener('click', () => {
   renderAll();
 });
 
+document.getElementById('btn-prev-week').addEventListener('click', () => {
+  currentWeekStart = addDays(currentWeekStart, -7);
+  renderPlanning();
+  renderCharts();
+});
+document.getElementById('btn-next-week').addEventListener('click', () => {
+  currentWeekStart = addDays(currentWeekStart, 7);
+  renderPlanning();
+  renderCharts();
+});
+document.getElementById('btn-today').addEventListener('click', () => {
+  currentWeekStart = getMonday(new Date());
+  renderPlanning();
+  renderCharts();
+});
+document.getElementById('btn-copy-prev').addEventListener('click', () => {
+  const prevKey = formatDateKey(addDays(currentWeekStart, -7));
+  const currKey = weekKey();
+  const prev = state.assignments[prevKey];
+  if (!prev || Object.keys(prev).length === 0) {
+    toast("Pas d'affectations sur la semaine précédente.", '');
+    return;
+  }
+  if (state.assignments[currKey] && Object.keys(state.assignments[currKey]).length > 0) {
+    if (!confirm('Écraser les affectations actuelles avec celles de la semaine précédente ?')) return;
+  }
+  state.assignments[currKey] = Object.assign({}, prev);
+  markDirty();
+  renderPlanning();
+  renderCharts();
+  toast('Affectations copiées depuis la semaine précédente.', 'success');
+});
+document.getElementById('btn-clear-week').addEventListener('click', () => {
+  const currKey = weekKey();
+  if (!state.assignments[currKey] || Object.keys(state.assignments[currKey]).length === 0) {
+    toast('Cette semaine est déjà vide.', '');
+    return;
+  }
+  if (!confirm('Vider toutes les affectations de cette semaine ?')) return;
+  delete state.assignments[currKey];
+  markDirty();
+  renderPlanning();
+  renderCharts();
+});
+
 document.getElementById('btn-add-room').addEventListener('click', () => {
   let n = String.fromCharCode(65 + state.rooms.length); // E, F, G...
   state.rooms.push('Salle ' + n);
@@ -1175,8 +1378,14 @@ document.getElementById('btn-add-room').addEventListener('click', () => {
 });
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-  if (!confirm('Vider toutes les affectations ? (les profs/salles/créneaux restent)')) return;
+  if (!confirm('Vider toutes les affectations sur TOUTES les semaines ? (les profs/salles/créneaux restent)')) return;
   state.assignments = {};
+  markDirty();
+  renderAll();
+});
+
+document.getElementById('cfg-start-date').addEventListener('change', e => {
+  state.startDate = e.target.value;
   markDirty();
   renderAll();
 });
